@@ -1,4 +1,4 @@
-// Copyright ©2015 The Gonum Authors. All rights reserved.
+// Copyright ©2026 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -160,7 +160,7 @@ func (s *inducedMultiplexLayerDirected) From(uid int64) graph.Nodes {
 	var nodes []graph.Node
 	for _, vid := range s.multiplex.layers[s.layer].edgesFrom[uid] {
 		if s.ids.Has(int64(vid)) {
-			// ...
+
 			nodes = append(nodes, s.multiplex.nodes[vid])
 		}
 	}
