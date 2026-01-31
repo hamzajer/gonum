@@ -1,6 +1,7 @@
 // Copyright ©2026 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package community
 
 import (
@@ -19,7 +20,7 @@ import (
 //
 // The Leiden algorithm improves upon Louvain by guaranteeing well-connected
 // communities through a refinement phase after each move phase. See
-// Traag, Waltman & Van Eck, Sci Rep 9, 5233 (2019), doi:10.1038/s41598-019-41695-z.
+// Traag, Waltman & Van Eck, Sci Rep 9, 5233 (2019),https://doi.org/10.1038/s41598-019-41695-z
 //
 // If src is nil, rand.IntN is used as the random generator. Leiden will panic
 // if g has any edge with negative edge weight.
