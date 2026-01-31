@@ -160,7 +160,7 @@ func (s *inducedMultiplexLayerDirected) From(uid int64) graph.Nodes {
 	var nodes []graph.Node
 	for _, vid := range s.multiplex.layers[s.layer].edgesFrom[uid] {
 		if s.ids.Has(int64(vid)) {
-// ...
+			// ...
 			nodes = append(nodes, s.multiplex.nodes[vid])
 		}
 	}

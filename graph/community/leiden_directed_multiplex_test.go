@@ -29,19 +29,19 @@ func TestLeidenDirectedMultiplex(t *testing.T) {
 		if test.structures[0].resolution != 1 {
 			panic("bad test: expect resolution=1")
 		}
-		
+
 		var (
 			got   *ReducedDirectedMultiplex
 			bestQ = math.Inf(-1)
 		)
-		
+
 		src := rand.New(rand.NewPCG(1, 1))
 		for i := 0; i < iterations; i++ {
 			r := LeidenMultiplex(g, weights, nil, true, src).(*ReducedDirectedMultiplex)
-			
+
 			qVec := QMultiplex(r, nil, weights, nil)
 			q := floats.Sum(qVec)
-			
+
 			if q > bestQ || math.IsNaN(q) {
 				bestQ = q
 				got = r
@@ -82,7 +82,7 @@ func TestLeidenDirectedMultiplex(t *testing.T) {
 			order.ByID(c)
 		}
 		order.BySliceIDs(gotCommunities)
-		
+
 		// Verify partition validity (disjoint and complete)
 		for l := 0; l < g.Depth(); l++ {
 			nodes := graph.NodesOf(g.Layer(l).Nodes())

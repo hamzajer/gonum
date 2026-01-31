@@ -193,6 +193,7 @@ func refineUndirected(l *undirectedLocalMover, resolution float64, rnd func(int)
 	}
 	return refined
 }
+
 // LeidenMultiplex returns the hierarchical modularization of g at the given
 // resolution using the Leiden algorithm. If all is true and g has negatively
 // weighted layers, all communities will be searched. If src is nil, rand.IntN

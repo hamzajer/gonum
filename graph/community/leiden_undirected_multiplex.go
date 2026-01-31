@@ -93,8 +93,8 @@ func (s *inducedUndirectedMultiplex) Layer(l int) graph.Undirected {
 // inducedMultiplexLayer is a single layer of an induced multiplex (graph.Undirected).
 type inducedMultiplexLayer struct {
 	multiplex *ReducedUndirectedMultiplex
-	layer    int
-	ids      set.Ints[int64]
+	layer     int
+	ids       set.Ints[int64]
 }
 
 func (s *inducedMultiplexLayer) Node(id int64) graph.Node {
