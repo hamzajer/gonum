@@ -198,6 +198,7 @@ type structure struct {
 	resolution  float64
 	memberships []intset
 	want, tol   float64
+	leidenWant  float64
 }
 
 type level struct {

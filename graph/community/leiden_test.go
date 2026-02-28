@@ -214,9 +214,6 @@ func BenchmarkLeiden(b *testing.B) {
 func TestLeidenRefinementConnectivity(t *testing.T) {
 	g := simple.NewUndirectedGraph()
 	// Small graph: triangle 0-1-2 and edge 2-3.
-	for i := 0; i < 4; i++ {
-		g.AddNode(simple.Node(i))
-	}
 	g.SetEdge(simple.Edge{F: simple.Node(0), T: simple.Node(1)})
 	g.SetEdge(simple.Edge{F: simple.Node(1), T: simple.Node(2)})
 	g.SetEdge(simple.Edge{F: simple.Node(2), T: simple.Node(0)})
@@ -238,9 +235,6 @@ func TestLeidenRefinementConnectivity(t *testing.T) {
 func TestLeidenDeterminism(t *testing.T) {
 	g := simple.NewUndirectedGraph()
 	for u, e := range smallDumbell {
-		if g.Node(int64(u)) == nil {
-			g.AddNode(simple.Node(u))
-		}
 		for v := range e {
 			g.SetEdge(simple.Edge{F: simple.Node(u), T: simple.Node(v)})
 		}

@@ -62,19 +62,7 @@ func Weight(g ReducedGraph) float64 {
 // graph g and the given score function. The effort parameter determines how
 // many attempts will be made to get an improved score for any given resolution.
 func ModularScore(g graph.Graph, score func(ReducedGraph) float64, effort int, src rand.Source) func(float64) (float64, Reduced) {
-	return func(resolution float64) (float64, Reduced) {
-		max := math.Inf(-1)
-		var best Reduced
-		for i := 0; i < effort; i++ {
-			r := Modularize(g, resolution, src)
-			s := score(r)
-			if s > max {
-				max = s
-				best = r
-			}
-		}
-		return max, best
-	}
+	return reducedScore(g, Modularize, score, effort, src)
 }
 
 // LeidenScore returns a Leiden modularized scoring function for Profile based on
@@ -82,11 +70,18 @@ func ModularScore(g graph.Graph, score func(ReducedGraph) float64, effort int, s
 // many attempts will be made to get an improved score for any given resolution.
 // It uses the Leiden algorithm instead of Louvain, yielding well-connected communities.
 func LeidenScore(g graph.Graph, score func(ReducedGraph) float64, effort int, src rand.Source) func(float64) (float64, Reduced) {
+	return reducedScore(g, Leiden, score, effort, src)
+}
+
+// reducedScore returns a scoring function for Profile that applies the given
+// reducer to g for each resolution, running effort attempts and returning the
+// best score found.
+func reducedScore(g graph.Graph, reducer func(graph.Graph, float64, rand.Source) ReducedGraph, score func(ReducedGraph) float64, effort int, src rand.Source) func(float64) (float64, Reduced) {
 	return func(resolution float64) (float64, Reduced) {
 		max := math.Inf(-1)
 		var best Reduced
 		for i := 0; i < effort; i++ {
-			r := Leiden(g, resolution, src)
+			r := reducer(g, resolution, src)
 			s := score(r)
 			if s > max {
 				max = s

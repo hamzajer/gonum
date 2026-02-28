@@ -69,8 +69,9 @@ var communityDirectedMultiplexQTests = []struct {
 					0: linksTo(0, 1),
 					1: linksTo(2, 3, 4),
 				},
-				want: 0.5714285714285716,
-				tol:  1e-10,
+				want:       0.5714285714285716,
+				tol:        1e-10,
+				leidenWant: 0.428,
 			},
 		},
 		wantLevels: []level{
@@ -108,8 +109,9 @@ var communityDirectedMultiplexQTests = []struct {
 					0: linksTo(0, 1),
 					1: linksTo(2, 3, 4),
 				},
-				want: 0.5714285714285716,
-				tol:  1e-10,
+				want:       0.5714285714285716,
+				tol:        1e-10,
+				leidenWant: 0.428,
 			},
 		},
 		wantLevels: []level{
@@ -146,6 +148,7 @@ var communityDirectedMultiplexQTests = []struct {
 					1: linksTo(3, 4, 5),
 				},
 				want: 2.5714285714285716, tol: 1e-10,
+				leidenWant: 0.57,
 			},
 			{
 				resolution: 1,
@@ -187,6 +190,7 @@ var communityDirectedMultiplexQTests = []struct {
 					1: linksTo(3, 4, 5),
 				},
 				want: 9.0, tol: 1e-10,
+				leidenWant: 3.0,
 			},
 			{
 				resolution: 1,
@@ -238,6 +242,7 @@ var communityDirectedMultiplexQTests = []struct {
 					3: linksTo(3, 4, 5, 10),
 				},
 				want: 33.818057455540355, tol: 1e-9,
+				leidenWant: 33.0,
 			},
 			{
 				resolution: 1,

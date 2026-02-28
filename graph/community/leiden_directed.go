@@ -169,7 +169,7 @@ func refineDirected(l *directedLocalMover, resolution float64, rnd func(int) int
 		sortedComm := make([]graph.Node, len(comm))
 		copy(sortedComm, comm)
 		order.ByID(sortedComm)
-		_ = subMover.localMovingHeuristic(rnd)
+		subMover.localMovingHeuristic(rnd)
 		for _, subComm := range subMover.communities {
 			refinedComm := make([]graph.Node, len(subComm))
 			for j, n := range subComm {

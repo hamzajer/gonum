@@ -20,12 +20,14 @@ import (
 //
 // The Leiden algorithm improves upon Louvain by guaranteeing well-connected
 // communities through a refinement phase after each move phase. See
-// Traag, Waltman & Van Eck, Sci Rep 9, 5233 (2019),https://doi.org/10.1038/s41598-019-41695-z
+// [Traag, Waltman & Van Eck, Sci Rep 9, 5233 (2019)].
 //
 // If src is nil, rand.IntN is used as the random generator. Leiden will panic
 // if g has any edge with negative edge weight.
 //
 // graph.Undirect may be used as a shim to allow modularization of directed graphs.
+//
+// [Traag, Waltman & Van Eck, Sci Rep 9, 5233 (2019)]: https://doi.org/10.1038/s41598-019-41695-z
 func Leiden(g graph.Graph, resolution float64, src rand.Source) ReducedGraph {
 	switch g := g.(type) {
 	case graph.Undirected:
@@ -182,7 +184,7 @@ func refineUndirected(l *undirectedLocalMover, resolution float64, rnd func(int)
 		sortedComm := make([]graph.Node, len(comm))
 		copy(sortedComm, comm)
 		order.ByID(sortedComm)
-		_ = subMover.localMovingHeuristic(rnd)
+		subMover.localMovingHeuristic(rnd)
 		for _, subComm := range subMover.communities {
 			refinedComm := make([]graph.Node, len(subComm))
 			for j, n := range subComm {
@@ -194,14 +196,12 @@ func refineUndirected(l *undirectedLocalMover, resolution float64, rnd func(int)
 	return refined
 }
 
-// LeidenMultiplex returns the hierarchical modularization of g at the given
-// resolution using the Leiden algorithm. If all is true and g has negatively
-// weighted layers, all communities will be searched. If src is nil, rand.IntN
-// is used. LeidenMultiplex will panic if g has any edge with weight that does
-// not sign-match the layer weight.
-//
-// Directed multiplex is not yet implemented; use UndirectedMultiplex or
-// graph.Undirect for directed layers.
+// LeidenMultiplex returns the hierarchical modularization of g at the given resolution
+// using the Leiden algorithm. If all is true and g has negatively weighted layers, all
+// communities will be searched during the modularization. If src is nil, rand.IntN is
+// used as the random generator.
+// LeidenMultiplex will panic if g has any edge whose weight has
+// the opposite sign to its layer weight.
 func LeidenMultiplex(g Multiplex, weights, resolutions []float64, all bool, src rand.Source) ReducedMultiplex {
 	if weights != nil && len(weights) != g.Depth() {
 		panic("community: weights vector length mismatch")

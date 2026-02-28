@@ -103,27 +103,9 @@ func TestLeidenDirectedMultiplex(t *testing.T) {
 			}
 		}
 
-		// Check Q value against expected (Louvain result)
-		// Leiden should be roughly equal or better, EXCEPT where Louvain constructs
-		// disconnected communities which Leiden splits.
 		want := test.structures[0].want
-		switch test.name {
-		case "repulsion":
-			// Louvain finds disconnected communities {0,1,2} (Q=9).
-			// Leiden splits them into singletons (Q=3) because they have no internal edges.
-			want = 3.0
-		case "simple_directed":
-			// Louvain finds {2,3,4} (Q=0.571).
-			// Leiden splits {3} from {2,4} or similar because of weak connectivity (path).
-			want = 0.428
-		case "simple_directed_twice":
-			want = 0.428
-		case "small_dumbell":
-			// Leiden splits weak path connections.
-			want = 0.57
-		case "middle_east":
-			// Leiden might find slightly lower Q due to refinement.
-			want = 33.0
+		if lw := test.structures[0].leidenWant; lw != 0 {
+			want = lw
 		}
 
 		if bestQ < want-1e-6 {
