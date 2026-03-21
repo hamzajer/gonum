@@ -369,7 +369,7 @@ const (
 	positiveWeight = "community: unexpected positive edge weight"
 
 	// deltaQtol is the tolerance for progression of the local moving heuristic's improvement of Q.
-	deltaQtol = 1e-15
+	deltaQtol = 1e-14
 )
 
 // positiveWeightFuncFor returns a constructed weight function for the
