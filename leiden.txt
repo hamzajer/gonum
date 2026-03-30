@@ -1,0 +1,54 @@
+goos: linux
+goarch: amd64
+pkg: gonum.org/v1/gonum/graph/community
+cpu: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz
+BenchmarkLeidenResolution/dupGraph/γ=0.5-8          	      79	  18260811 ns/op	 3502522 B/op	   69990 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=0.5-8          	      60	  16687659 ns/op	 3500941 B/op	   69915 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=0.5-8          	     100	  13470863 ns/op	 3500045 B/op	   70008 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=0.5-8          	     100	  16132126 ns/op	 3500046 B/op	   70008 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=0.5-8          	      72	  16871943 ns/op	 3503965 B/op	   70046 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=0.5-8          	      85	  14225114 ns/op	 3501087 B/op	   69999 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=1.0-8          	      93	  14921356 ns/op	 3846620 B/op	   77179 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=1.0-8          	      91	  18958372 ns/op	 3847403 B/op	   77189 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=1.0-8          	      57	  18475649 ns/op	 3845343 B/op	   77142 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=1.0-8          	      68	  17602570 ns/op	 3845735 B/op	   77202 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=1.0-8          	      79	  19573555 ns/op	 3844772 B/op	   77139 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=1.0-8          	      72	  16037836 ns/op	 3843612 B/op	   77141 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=2.0-8          	      30	  77180034 ns/op	21114330 B/op	  440276 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=2.0-8          	      30	  80773743 ns/op	21114297 B/op	  440276 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=2.0-8          	      32	  75246615 ns/op	21143315 B/op	  440802 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=2.0-8          	      30	  82058274 ns/op	21114293 B/op	  440276 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=2.0-8          	      22	  76706453 ns/op	20988371 B/op	  437629 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=2.0-8          	      30	  71759461 ns/op	21114328 B/op	  440276 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=5.0-8          	      22	  57179668 ns/op	13432431 B/op	  285096 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=5.0-8          	      21	  59483672 ns/op	13514626 B/op	  286972 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=5.0-8          	      20	  60471860 ns/op	13407390 B/op	  284604 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=5.0-8          	      20	  62027625 ns/op	13407360 B/op	  284604 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=5.0-8          	      20	  57629323 ns/op	13407390 B/op	  284604 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=5.0-8          	      21	  60970285 ns/op	13514627 B/op	  286972 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=10.0-8         	      72	  23979742 ns/op	 5813104 B/op	  122835 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=10.0-8         	      75	  24381402 ns/op	 5907407 B/op	  124829 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=10.0-8         	      72	  24674062 ns/op	 5813112 B/op	  122835 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=10.0-8         	      75	  27263171 ns/op	 5907431 B/op	  124830 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=10.0-8         	      63	  24651738 ns/op	 5830695 B/op	  123251 allocs/op
+BenchmarkLeidenResolution/dupGraph/γ=10.0-8         	      74	  26167982 ns/op	 5850096 B/op	  123621 allocs/op
+BenchmarkLeidenDirected-8                           	      24	  68796735 ns/op	17421034 B/op	  370319 allocs/op
+BenchmarkLeidenDirected-8                           	      25	  65189101 ns/op	17642655 B/op	  374940 allocs/op
+BenchmarkLeidenDirected-8                           	      25	  64850716 ns/op	17642644 B/op	  374940 allocs/op
+BenchmarkLeidenDirected-8                           	      19	  71193341 ns/op	17434876 B/op	  370722 allocs/op
+BenchmarkLeidenDirected-8                           	      24	  67945525 ns/op	17420984 B/op	  370319 allocs/op
+BenchmarkLeidenDirected-8                           	      26	  65693757 ns/op	17496703 B/op	  371842 allocs/op
+BenchmarkLeiden-8                                   	      86	  15818784 ns/op	 3846538 B/op	   77173 allocs/op
+BenchmarkLeiden-8                                   	      68	  17656999 ns/op	 3845723 B/op	   77202 allocs/op
+BenchmarkLeiden-8                                   	      74	  16439042 ns/op	 3844582 B/op	   77151 allocs/op
+BenchmarkLeiden-8                                   	      85	  15754155 ns/op	 3846656 B/op	   77184 allocs/op
+BenchmarkLeiden-8                                   	      81	  15887815 ns/op	 3845581 B/op	   77158 allocs/op
+BenchmarkLeiden-8                                   	      81	  17276113 ns/op	 3845574 B/op	   77158 allocs/op
+BenchmarkLeidenUndirectedMultiplex-8                	      69	  19777952 ns/op	 4805958 B/op	  108320 allocs/op
+BenchmarkLeidenUndirectedMultiplex-8                	      64	  20886573 ns/op	 4802689 B/op	  108086 allocs/op
+BenchmarkLeidenUndirectedMultiplex-8                	      62	  18883111 ns/op	 4803790 B/op	  108122 allocs/op
+BenchmarkLeidenUndirectedMultiplex-8                	      74	  18694508 ns/op	 4803905 B/op	  108192 allocs/op
+BenchmarkLeidenUndirectedMultiplex-8                	      70	  20426014 ns/op	 4805655 B/op	  108296 allocs/op
+BenchmarkLeidenUndirectedMultiplex-8                	      67	  18220044 ns/op	 4805969 B/op	  108244 allocs/op
+PASS
+ok  	gonum.org/v1/gonum/graph/community	233.954s

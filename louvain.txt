@@ -1,0 +1,60 @@
+goos: linux
+goarch: amd64
+pkg: gonum.org/v1/gonum/graph/community
+cpu: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz
+BenchmarkLouvainResolution/dupGraph/γ=0.5-8          	     141	   8937868 ns/op	 1870751 B/op	   35293 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=0.5-8          	     140	   8499448 ns/op	 1870812 B/op	   35292 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=0.5-8          	     145	   9154558 ns/op	 1871035 B/op	   35311 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=0.5-8          	     139	   9029483 ns/op	 1870758 B/op	   35292 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=0.5-8          	     140	  10116902 ns/op	 1870814 B/op	   35292 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=0.5-8          	     135	   8864340 ns/op	 1870911 B/op	   35296 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=1.0-8          	     130	   9265614 ns/op	 1905404 B/op	   35757 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=1.0-8          	     136	   8547253 ns/op	 1906516 B/op	   35801 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=1.0-8          	     134	   8831662 ns/op	 1906059 B/op	   35788 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=1.0-8          	     141	   9142420 ns/op	 1906344 B/op	   35790 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=1.0-8          	     100	  12512933 ns/op	 1904293 B/op	   35733 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=1.0-8          	      90	  21967086 ns/op	 1905527 B/op	   35775 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=2.0-8          	     100	  15959758 ns/op	 1869383 B/op	   35419 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=2.0-8          	      91	  12696416 ns/op	 1869888 B/op	   35463 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=2.0-8          	     100	  12515240 ns/op	 1869374 B/op	   35418 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=2.0-8          	     100	  10223324 ns/op	 1869377 B/op	   35418 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=2.0-8          	     132	   8180586 ns/op	 1871277 B/op	   35444 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=2.0-8          	     144	  12535292 ns/op	 1870608 B/op	   35437 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=5.0-8          	     144	   9820772 ns/op	 1849128 B/op	   34976 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=5.0-8          	     126	   9544091 ns/op	 1849391 B/op	   34981 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=5.0-8          	     144	  11304168 ns/op	 1849133 B/op	   34976 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=5.0-8          	     135	  11207705 ns/op	 1849307 B/op	   34982 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=5.0-8          	     100	  13136577 ns/op	 1849644 B/op	   34999 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=5.0-8          	     141	   7923488 ns/op	 1849219 B/op	   34984 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=10.0-8         	     151	   9938302 ns/op	 1901175 B/op	   35507 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=10.0-8         	     141	   7999031 ns/op	 1901526 B/op	   35524 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=10.0-8         	     146	   9321111 ns/op	 1901684 B/op	   35527 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=10.0-8         	     100	  10323355 ns/op	 1901578 B/op	   35501 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=10.0-8         	     100	  11802418 ns/op	 1901573 B/op	   35501 allocs/op
+BenchmarkLouvainResolution/dupGraph/γ=10.0-8         	     100	  11126594 ns/op	 1901571 B/op	   35501 allocs/op
+BenchmarkLouvainDirectedMultiplex-8                  	      72	  18921171 ns/op	 2701639 B/op	   60534 allocs/op
+BenchmarkLouvainDirectedMultiplex-8                  	      84	  16011499 ns/op	 2698160 B/op	   60361 allocs/op
+BenchmarkLouvainDirectedMultiplex-8                  	      85	  17130076 ns/op	 2697534 B/op	   60334 allocs/op
+BenchmarkLouvainDirectedMultiplex-8                  	      62	  18641374 ns/op	 2697536 B/op	   60341 allocs/op
+BenchmarkLouvainDirectedMultiplex-8                  	      60	  18346988 ns/op	 2698264 B/op	   60382 allocs/op
+BenchmarkLouvainDirectedMultiplex-8                  	      85	  16718991 ns/op	 2697537 B/op	   60334 allocs/op
+BenchmarkLouvainDirected-8                           	      66	  15788504 ns/op	 2168743 B/op	   42153 allocs/op
+BenchmarkLouvainDirected-8                           	      74	  14078717 ns/op	 2168872 B/op	   42182 allocs/op
+BenchmarkLouvainDirected-8                           	      98	  15587002 ns/op	 2169652 B/op	   42177 allocs/op
+BenchmarkLouvainDirected-8                           	      91	  12913066 ns/op	 2168365 B/op	   42161 allocs/op
+BenchmarkLouvainDirected-8                           	      96	  12750310 ns/op	 2169323 B/op	   42173 allocs/op
+BenchmarkLouvainDirected-8                           	     100	  14029952 ns/op	 2169965 B/op	   42183 allocs/op
+BenchmarkLouvainMultiplex-8                          	     100	  12313879 ns/op	 2417271 B/op	   53238 allocs/op
+BenchmarkLouvainMultiplex-8                          	     100	  11145431 ns/op	 2417273 B/op	   53238 allocs/op
+BenchmarkLouvainMultiplex-8                          	     100	  10237579 ns/op	 2417272 B/op	   53238 allocs/op
+BenchmarkLouvainMultiplex-8                          	     120	  11551189 ns/op	 2418840 B/op	   53298 allocs/op
+BenchmarkLouvainMultiplex-8                          	     100	  10930735 ns/op	 2417267 B/op	   53238 allocs/op
+BenchmarkLouvainMultiplex-8                          	     100	  11321417 ns/op	 2417275 B/op	   53238 allocs/op
+BenchmarkLouvain-8                                   	     100	  11481105 ns/op	 1904300 B/op	   35733 allocs/op
+BenchmarkLouvain-8                                   	     142	   9142829 ns/op	 1906250 B/op	   35788 allocs/op
+BenchmarkLouvain-8                                   	     122	   9169012 ns/op	 1905287 B/op	   35760 allocs/op
+BenchmarkLouvain-8                                   	     100	  10027390 ns/op	 1904296 B/op	   35733 allocs/op
+BenchmarkLouvain-8                                   	     100	  10833299 ns/op	 1904302 B/op	   35733 allocs/op
+BenchmarkLouvain-8                                   	     130	   8255823 ns/op	 1905410 B/op	   35757 allocs/op
+PASS
+ok  	gonum.org/v1/gonum/graph/community	250.770s
