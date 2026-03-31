@@ -6,26 +6,33 @@ package community
 
 import (
 	"bufio"
+	"compress/gzip"
 	"encoding/csv"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math"
 	"math/rand/v2"
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 	"testing"
 
 	"gonum.org/v1/gonum/graph"
+	"gonum.org/v1/gonum/graph/encoding/graph6"
 	"gonum.org/v1/gonum/graph/graphs/gen"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/internal/order"
 )
 
 // arxivEdgePath is the path to the ogbn-arxiv edge CSV file.
+// The original dataset is available from Kaggle: https://www.kaggle.com/datasets/dataup1/ogbn-arxiv?resource=download
 // Set via -arxiv flag: go test -run TestLeidenVsLouvainArxiv -arxiv /path/to/edge.csv
+// To generate graph6 testdata from CSV: go test -run GenerateArxivGraph6 -arxiv /path/to/edge.csv
 var arxivEdgePath = flag.String("arxiv", "", "path to ogbn-arxiv edge.csv (enables arxiv-based tests and benchmarks)")
+var arxivG6Path = flag.String("arxivg6", "", "path to graph6 file (gzipped OK) representing the arxiv subgraph")
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -116,13 +123,96 @@ func buildArxivSubgraph(t testing.TB, allEdges [][2]int64, maxEdges int) *simple
 // arxivSubgraphOrSkip loads the ogbn-arxiv edge CSV and builds a subgraph
 // from the first maxEdges edges. The test or benchmark is skipped if the
 // -arxiv flag was not provided.
-func arxivSubgraphOrSkip(tb testing.TB, maxEdges int) *simple.UndirectedGraph {
+func arxivSubgraphOrSkip(tb testing.TB, maxEdges int) graph.Undirected {
 	tb.Helper()
+	// Prefer a precomputed graph6 subgraph from flag or testdata when provided.
+	var g6path string
+	if *arxivG6Path != "" {
+		g6path = *arxivG6Path
+	} else {
+		// Look for testdata files matching the requested size.
+		try1 := fmt.Sprintf("testdata/arxiv_%d.graph6.gz", maxEdges)
+		try2 := fmt.Sprintf("testdata/arxiv_%d.graph6", maxEdges)
+		if _, err := os.Stat(try1); err == nil {
+			g6path = try1
+		} else if _, err := os.Stat(try2); err == nil {
+			g6path = try2
+		}
+	}
+
+	if g6path != "" {
+		f, err := os.Open(g6path)
+		if err != nil {
+			tb.Fatalf("failed to open graph6 file: %v", err)
+		}
+		defer f.Close()
+
+		// Detect gzip by magic bytes.
+		header := make([]byte, 2)
+		n, _ := f.Read(header)
+		_, _ = f.Seek(0, io.SeekStart)
+		var r io.Reader = f
+		if n == 2 && header[0] == 0x1f && header[1] == 0x8b {
+			gz, err := gzip.NewReader(f)
+			if err != nil {
+				tb.Fatalf("failed to create gzip reader: %v", err)
+			}
+			defer gz.Close()
+			r = gz
+		}
+		data, err := ioutil.ReadAll(r)
+		if err != nil {
+			tb.Fatalf("failed to read graph6 data: %v", err)
+		}
+		s := strings.TrimSpace(string(data))
+		return graph6.Graph(s)
+	}
+
 	if *arxivEdgePath == "" {
-		tb.Skip("ogbn-arxiv dataset not provided; use -arxiv /path/to/edge.csv to enable")
+		tb.Skip("ogbn-arxiv dataset not provided; use -arxiv /path/to/edge.csv or provide testdata/arxiv_<N>.graph6(.gz) to enable")
 	}
 	allEdges := loadArxivEdges(tb, *arxivEdgePath)
 	return buildArxivSubgraph(tb, allEdges, maxEdges)
+}
+
+// TestGenerateArxivGraph6 generates and writes graph6 testdata files from the CSV.
+// Run with: go test -run TestGenerateArxivGraph6 -arxiv /path/to/edge.csv
+// This creates testdata/arxiv_5000.graph6.gz and testdata/arxiv_10000.graph6.gz
+func TestGenerateArxivGraph6(t *testing.T) {
+	if *arxivEdgePath == "" {
+		t.Skip("ogbn-arxiv dataset not provided; use -arxiv /path/to/edge.csv")
+	}
+
+	allEdges := loadArxivEdges(t, *arxivEdgePath)
+
+	for _, maxE := range []int{5000, 10000} {
+		g := buildArxivSubgraph(t, allEdges, maxE)
+		encoded := graph6.Encode(g)
+
+		// Write plain graph6 file
+		plainPath := fmt.Sprintf("testdata/arxiv_%d.graph6", maxE)
+		os.MkdirAll("testdata", 0755)
+		if err := os.WriteFile(plainPath, []byte(encoded), 0644); err != nil {
+			t.Fatalf("failed to write %s: %v", plainPath, err)
+		}
+		t.Logf("Wrote %s", plainPath)
+
+		// Write gzipped graph6 file
+		gzPath := fmt.Sprintf("testdata/arxiv_%d.graph6.gz", maxE)
+		gzFile, err := os.Create(gzPath)
+		if err != nil {
+			t.Fatalf("failed to create %s: %v", gzPath, err)
+		}
+		gz := gzip.NewWriter(gzFile)
+		if _, err := gz.Write([]byte(encoded)); err != nil {
+			gz.Close()
+			gzFile.Close()
+			t.Fatalf("failed to write gzip data: %v", err)
+		}
+		gz.Close()
+		gzFile.Close()
+		t.Logf("Wrote %s", gzPath)
+	}
 }
 
 // BenchmarkLeidenResolution benchmarks the Leiden algorithm across
