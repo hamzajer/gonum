@@ -130,13 +130,19 @@ func arxivSubgraphOrSkip(tb testing.TB, maxEdges int) graph.Undirected {
 	if *arxivG6Path != "" {
 		g6path = *arxivG6Path
 	} else {
-		// Look for testdata files matching the requested size.
-		try1 := fmt.Sprintf("testdata/arxiv_%d.graph6.gz", maxEdges)
-		try2 := fmt.Sprintf("testdata/arxiv_%d.graph6", maxEdges)
-		if _, err := os.Stat(try1); err == nil {
-			g6path = try1
-		} else if _, err := os.Stat(try2); err == nil {
-			g6path = try2
+		enableTestdata := false
+		if v := os.Getenv("GONUM_ENABLE_ARXIV_TESTDATA"); v == "1" || strings.EqualFold(v, "true") {
+			enableTestdata = true
+		}
+		if enableTestdata {
+			// Look for testdata files matching the requested size.
+			try1 := fmt.Sprintf("testdata/arxiv_%d.graph6.gz", maxEdges)
+			try2 := fmt.Sprintf("testdata/arxiv_%d.graph6", maxEdges)
+			if _, err := os.Stat(try1); err == nil {
+				g6path = try1
+			} else if _, err := os.Stat(try2); err == nil {
+				g6path = try2
+			}
 		}
 	}
 
