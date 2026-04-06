@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
-	"sync"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/iterator"
@@ -23,11 +22,6 @@ import (
 // and https://hog.grinvin.org/ for a source of interesting graphs in graph6
 // format.
 type Graph string
-
-// numberCache caches the node count for graph6 strings to avoid repeated
-// O(n) scans during edge iteration in community detection and other
-// graph analysis algorithms.
-var numberCache sync.Map
 
 var (
 	g6 Graph
@@ -145,13 +139,10 @@ func (g Graph) From(id int64) graph.Nodes {
 	if !IsValid(g) {
 		return graph.Empty
 	}
-	// Inline the node existence check to avoid calling numberOf() here.
-	// The g6Iterator will call numberOf() once and cache it.
-	n := numberOf(g)
-	if id < 0 || n <= id {
+	if g.Node(id) == nil {
 		return nil
 	}
-	return &g6Iterator{g: g, from: id, to: -1, n: n}
+	return &g6Iterator{g: g, from: id, to: -1}
 }
 
 // HasEdgeBetween returns whether an edge exists between nodes with IDs xid
@@ -163,14 +154,10 @@ func (g Graph) HasEdgeBetween(xid, yid int64) bool {
 	if xid == yid {
 		return false
 	}
-	// Cache the result of numberOf to avoid calling it twice.
-	// This is critical for performance when called repeatedly during
-	// edge iteration in community detection algorithms.
-	n := numberOf(g)
-	if xid < 0 || n <= xid {
+	if xid < 0 || numberOf(g) <= xid {
 		return false
 	}
-	if yid < 0 || n <= yid {
+	if yid < 0 || numberOf(g) <= yid {
 		return false
 	}
 	return isSet(bitFor(xid, yid), g)
@@ -182,9 +169,7 @@ func (g Graph) Node(id int64) graph.Node {
 	if !IsValid(g) {
 		return nil
 	}
-	// Cache the result of numberOf to avoid repeated O(n) string scans.
-	n := numberOf(g)
-	if id < 0 || n <= id {
+	if id < 0 || numberOf(g) <= id {
 		return nil
 	}
 	return simple.Node(id)
@@ -203,19 +188,13 @@ type g6Iterator struct {
 	g    Graph
 	from int64
 	to   int64
-	n    int64 // cached node count to avoid repeated numberOf() calls
 }
 
 var _ graph.Nodes = (*g6Iterator)(nil)
 
 func (i *g6Iterator) Next() bool {
-	// Compute node count only once on first access.
-	// Calling numberOf() repeatedly is O(|graph6_string|) which is catastrophic
-	// for large graphs when called per-edge during graph traversal.
-	if i.n == 0 {
-		i.n = numberOf(i.g)
-	}
-	for i.to < i.n-1 {
+	n := numberOf(i.g)
+	for i.to < n-1 {
 		i.to++
 		if i.to != i.from && isSet(bitFor(i.from, i.to), i.g) {
 			return true
@@ -225,12 +204,9 @@ func (i *g6Iterator) Next() bool {
 }
 
 func (i *g6Iterator) Len() int {
-	// Compute node count only once on first access.
-	if i.n == 0 {
-		i.n = numberOf(i.g)
-	}
 	var cnt int
-	for to := i.to; to < i.n-1; {
+	n := numberOf(i.g)
+	for to := i.to; to < n-1; {
 		to++
 		if to != i.from && isSet(bitFor(i.from, to), i.g) {
 			cnt++
@@ -239,52 +215,33 @@ func (i *g6Iterator) Len() int {
 	return cnt
 }
 
-func (i *g6Iterator) Reset() {
-	i.to = -1
-	i.n = 0 // Reset cached count when resetting iterator
-}
+func (i *g6Iterator) Reset() { i.to = -1 }
 
 func (i *g6Iterator) Node() graph.Node { return simple.Node(i.to) }
 
 // numberOf returns the graph6-encoded number corresponding to g.
-// The result is cached in numberCache to avoid repeated O(n) string scans.
 func numberOf(g Graph) int64 {
-	// Check cache first - this is critical for performance when processing
-	// large graphs with many edge lookups.
-	if cached, ok := numberCache.Load(string(g)); ok {
-		return cached.(int64)
-	}
-
-	var n int64
-
 	if len(g) < 1 {
-		n = -1
-	} else {
-		valid := true
-		for _, b := range []byte(g) {
-			if b < 63 || 126 < b {
-				valid = false
-				break
-			}
-		}
-		if !valid {
-			n = -1
-		} else if g[0] != 126 {
-			n = int64(g[0] - 63)
-		} else if len(g) < 4 {
-			n = -1
-		} else if g[1] != 126 {
-			n = int64(g[1]-63)<<12 | int64(g[2]-63)<<6 | int64(g[3]-63)
-		} else if len(g) < 8 {
-			n = -1
-		} else {
-			n = int64(g[2]-63)<<30 | int64(g[3]-63)<<24 | int64(g[4]-63)<<18 | int64(g[5]-63)<<12 | int64(g[6]-63)<<6 | int64(g[7]-63)
+		return -1
+	}
+	for _, b := range []byte(g) {
+		if b < 63 || 126 < b {
+			return -1
 		}
 	}
-
-	// Cache the result for future calls.
-	numberCache.Store(string(g), n)
-	return n
+	if g[0] != 126 {
+		return int64(g[0] - 63)
+	}
+	if len(g) < 4 {
+		return -1
+	}
+	if g[1] != 126 {
+		return int64(g[1]-63)<<12 | int64(g[2]-63)<<6 | int64(g[3]-63)
+	}
+	if len(g) < 8 {
+		return -1
+	}
+	return int64(g[2]-63)<<30 | int64(g[3]-63)<<24 | int64(g[4]-63)<<18 | int64(g[5]-63)<<12 | int64(g[6]-63)<<6 | int64(g[7]-63)
 }
 
 // bitFor returns the index into the graph6 adjacency matrix for xid--yid.

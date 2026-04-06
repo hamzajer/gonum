@@ -12,6 +12,7 @@ import (
 	"io"
 	"math"
 	"math/rand/v2"
+	"path"
 	"strings"
 	"testing"
 
@@ -22,133 +23,20 @@ import (
 	"gonum.org/v1/gonum/internal/order"
 )
 
-// the original data sets are from https://www.kaggle.com/datasets/dataup1/ogbn-arxiv
+// The original data sets are from https://www.kaggle.com/datasets/dataup1/ogbn-arxiv
 //
 //go:embed testdata/*.graph6.gz
 var testdataGraphs embed.FS
-
-// loadGraph6 loads a graph6-encoded graph from embedded testdata.
-// The filename should be relative to testdata (e.g., "arxiv_5000.graph6.gz").
-// Returns nil if the file is not found.
-func loadGraph6(filename string) graph.Undirected {
-	path := "testdata/" + filename
-	data, err := testdataGraphs.ReadFile(path)
-	if err != nil {
-		return nil
-	}
-
-	var r io.Reader = bytes.NewReader(data)
-
-	// Detect gzip by magic bytes.
-	if len(data) >= 2 && data[0] == 0x1f && data[1] == 0x8b {
-		gz, err := gzip.NewReader(bytes.NewReader(data))
-		if err != nil {
-			return nil
-		}
-		defer gz.Close()
-		r = gz
-	}
-
-	decoded, err := io.ReadAll(r)
-	if err != nil {
-		return nil
-	}
-
-	s := strings.TrimSpace(string(decoded))
-	return graph6.Graph(s)
-}
-
-// arxivSubgraphOrSkip loads the ogbn-arxiv subgraph from embedded testdata.
-// The test or benchmark is skipped if the testdata file is not found.
-func arxivSubgraphOrSkip(tb testing.TB, maxEdges int) graph.Undirected {
-	tb.Helper()
-
-	filename := fmt.Sprintf("arxiv_%d.graph6.gz", maxEdges)
-	g := loadGraph6(filename)
-	if g == nil {
-		tb.Skipf("testdata/%s not found", filename)
-	}
-	return g
-}
-
-// BenchmarkLeidenResolution benchmarks the Leiden algorithm across
-// multiple resolutions on the duplication-divergence graph.
-func BenchmarkLeidenResolution(b *testing.B) {
-	type benchCase struct {
-		name string
-		g    graph.Undirected
-	}
-	graphs := []benchCase{
-		{name: "dupGraph", g: dupGraph},
-	}
-
-	for _, bg := range graphs {
-		for _, γ := range []float64{0.5, 1, 2, 5, 10} {
-			b.Run(fmt.Sprintf("%s/γ=%.1f", bg.name, γ), func(b *testing.B) {
-				src := rand.NewPCG(1, 1)
-				for i := 0; i < b.N; i++ {
-					Leiden(bg.g, γ, src)
-				}
-			})
-		}
-	}
-}
-
-// BenchmarkLouvainResolution benchmarks the Louvain algorithm across
-// multiple resolutions on the duplication-divergence graph.
-func BenchmarkLouvainResolution(b *testing.B) {
-	for _, γ := range []float64{0.5, 1, 2, 5, 10} {
-		b.Run(fmt.Sprintf("dupGraph/γ=%.1f", γ), func(b *testing.B) {
-			src := rand.NewPCG(1, 1)
-			for i := 0; i < b.N; i++ {
-				Modularize(dupGraph, γ, src)
-			}
-		})
-	}
-}
-
-// BenchmarkLeidenArxiv benchmarks the Leiden algorithm on ogbn-arxiv subgraphs.
-func BenchmarkLeidenArxiv(b *testing.B) {
-	for _, maxE := range []int{5000, 10000} {
-		g := arxivSubgraphOrSkip(b, maxE)
-		for _, γ := range []float64{1, 2, 5} {
-			b.Run(fmt.Sprintf("E=%d/γ=%.1f", maxE, γ), func(b *testing.B) {
-				for i := 0; i < b.N; i++ {
-					src := rand.NewPCG(42, uint64(i))
-					Leiden(g, γ, src)
-				}
-			})
-		}
-	}
-}
-
-// BenchmarkLouvainArxiv benchmarks the Louvain algorithm on ogbn-arxiv subgraphs.
-func BenchmarkLouvainArxiv(b *testing.B) {
-	for _, maxE := range []int{5000, 10000} {
-		g := arxivSubgraphOrSkip(b, maxE)
-		for _, γ := range []float64{1, 2, 5} {
-			b.Run(fmt.Sprintf("E=%d/γ=%.1f", maxE, γ), func(b *testing.B) {
-				for i := 0; i < b.N; i++ {
-					src := rand.NewPCG(42, uint64(i))
-					Modularize(g, γ, src)
-				}
-			})
-		}
-	}
-}
 
 // TestLeidenVsLouvainArxiv compares Leiden and Louvain on ogbn-arxiv
 // subgraphs across multiple resolutions. Leiden is expected to identify
 // more communities by splitting weakly connected ones that Louvain merges,
 // while maintaining comparable modularity.
 func TestLeidenVsLouvainArxiv(t *testing.T) {
-	// 10000 edges is too slow
-	//for _, maxE := range []int{5000,10000} {
-	for _, maxE := range []int{5000} {
-		t.Run(fmt.Sprintf("E=%d", maxE), func(t *testing.T) {
-			g := arxivSubgraphOrSkip(t, maxE)
-			t.Logf("Subgraph: %d nodes", len(graph.NodesOf(g.Nodes())))
-
+	for _, test := range []arXivTestGraph{
+		arXivTestGraphs[0],
+	} {
+		t.Run(test.name, func(t *testing.T) {
 			for _, γ := range []float64{0.5, 1.0, 1.5} {
 				t.Run(fmt.Sprintf("γ=%.1f", γ), func(t *testing.T) {
 					const iterations = 3
@@ -160,8 +48,8 @@ func TestLeidenVsLouvainArxiv(t *testing.T) {
 						srcL := rand.New(rand.NewPCG(uint64(i), 0))
 						srcD := rand.New(rand.NewPCG(uint64(i), 0))
 
-						rLouvain := Modularize(g, γ, srcL)
-						rLeiden := Leiden(g, γ, srcD)
+						rLouvain := Modularize(test.g, γ, srcL)
+						rLeiden := Leiden(test.g, γ, srcD)
 
 						qL := Q(rLouvain, nil, γ)
 						qD := Q(rLeiden, nil, γ)
@@ -192,89 +80,66 @@ func TestLeidenVsLouvainArxiv(t *testing.T) {
 	}
 }
 
-// TestLeidenResolutionEffect verifies that increasing the resolution
-// parameter γ produces more (or equal) communities. This holds for
-// both standard graphs and the ogbn-arxiv citation network.
-func TestLeidenResolutionEffect(t *testing.T) {
-	type graphCase struct {
-		name    string
-		g       graph.Undirected
-		skipMsg string // non-empty means skip this case
-	}
-
-	cases := []graphCase{
-		{name: "dupGraph", g: dupGraph},
-	}
-
-	// Try to include ogbn-arxiv if available.
-	g := loadGraph6("arxiv_5000.graph6.gz")
-	if g != nil {
-		cases = append(cases, graphCase{name: "arxiv_5k", g: g})
-	}
-
-	resolutions := []float64{0.5, 1.0, 2.0, 5.0, 10.0}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			prevComms := 0
-
-			for _, γ := range resolutions {
-				src := rand.New(rand.NewPCG(1, 1))
-				r := Leiden(tc.g, γ, src)
-				nComms := len(r.Communities())
-
-				t.Logf("γ=%5.1f → %d communities", γ, nComms)
-
-				if prevComms > 0 && nComms < prevComms {
-					t.Errorf("community count decreased from %d (lower γ) to %d at γ=%.1f",
-						prevComms, nComms, γ)
-				}
-				prevComms = nComms
-			}
-		})
-	}
-}
-
-// TestLeidenConnectedness verifies that Leiden communities are internally
-// connected — the key guarantee over Louvain. Each community of size > 1
-// is checked via BFS: all members must be reachable from the first node
-// through edges internal to the community.
-func TestLeidenConnectedness(t *testing.T) {
-	type graphCase struct {
+func TestLeiden(t *testing.T) {
+	var leidenTests = []struct {
 		name string
 		g    graph.Undirected
-	}
-
-	cases := []graphCase{
+	}{
 		{name: "dupGraph", g: dupGraph},
+		{name: arXivTestGraphs[0].name, g: arXivTestGraphs[0].g},
 	}
 
-	// Try to include ogbn-arxiv if available.
-	g := loadGraph6("arxiv_5000.graph6.gz")
-	if g != nil {
-		cases = append(cases, graphCase{name: "arxiv_5k", g: g})
-	}
+	// Resolution effect verifies that increasing the resolution
+	// parameter γ produces more (or equal) communities. This holds for
+	// both standard graphs and the ogbn-arxiv citation network.
+	t.Run("resolution_effect", func(t *testing.T) {
+		for _, test := range leidenTests {
+			t.Run(test.name, func(t *testing.T) {
+				prevComms := 0
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			for _, γ := range []float64{0.5, 1.0, 2.0, 5.0} {
-				t.Run(fmt.Sprintf("γ=%.1f", γ), func(t *testing.T) {
+				for _, γ := range []float64{0.5, 1.0, 2.0, 5.0, 10.0} {
 					src := rand.New(rand.NewPCG(1, 1))
-					r := Leiden(tc.g, γ, src)
+					r := Leiden(test.g, γ, src)
+					nComms := len(r.Communities())
 
-					for i, comm := range r.Communities() {
-						if len(comm) <= 1 {
-							continue
-						}
-						if !isCommunityConnected(tc.g, comm) {
-							order.ByID(comm)
-							t.Errorf("community %d (size %d) is not connected", i, len(comm))
-						}
+					t.Logf("γ=%5.1f → %d communities", γ, nComms)
+
+					if prevComms > 0 && nComms < prevComms {
+						t.Errorf("community count decreased from %d (lower γ) to %d at γ=%.1f",
+							prevComms, nComms, γ)
 					}
-				})
-			}
-		})
-	}
+					prevComms = nComms
+				}
+			})
+		}
+	})
+
+	// Connectedness verifies that Leiden communities are internally
+	// connected — the key guarantee over Louvain. Each community of size > 1
+	// is checked via BFS: all members must be reachable from the first node
+	// through edges internal to the community.
+	t.Run("connectedness", func(t *testing.T) {
+		for _, test := range leidenTests {
+			t.Run(test.name, func(t *testing.T) {
+				for _, γ := range []float64{0.5, 1.0, 2.0, 5.0} {
+					t.Run(fmt.Sprintf("γ=%.1f", γ), func(t *testing.T) {
+						src := rand.New(rand.NewPCG(1, 1))
+						r := Leiden(test.g, γ, src)
+
+						for i, comm := range r.Communities() {
+							if len(comm) <= 1 {
+								continue
+							}
+							if !isCommunityConnected(test.g, comm) {
+								order.ByID(comm)
+								t.Errorf("community %d (size %d) is not connected", i, len(comm))
+							}
+						}
+					})
+				}
+			})
+		}
+	})
 }
 
 // TestLeidenVsLouvainDisconnected demonstrates Louvain's known weakness:
@@ -376,4 +241,145 @@ func isCommunityConnected(g graph.Undirected, comm []graph.Node) bool {
 	}
 
 	return len(visited) == len(comm)
+}
+
+// BenchmarkLeidenResolution benchmarks the Leiden algorithm across
+// multiple resolutions on the duplication-divergence graph.
+func BenchmarkLeidenResolution(b *testing.B) {
+	type benchCase struct {
+		name string
+		g    graph.Undirected
+	}
+	graphs := []benchCase{
+		{name: "dupGraph", g: dupGraph},
+	}
+
+	for _, bg := range graphs {
+		for _, γ := range []float64{0.5, 1, 2, 5, 10} {
+			b.Run(fmt.Sprintf("%s_γ=%.1f", bg.name, γ), func(b *testing.B) {
+				src := rand.NewPCG(1, 1)
+				for i := 0; i < b.N; i++ {
+					Leiden(bg.g, γ, src)
+				}
+			})
+		}
+	}
+}
+
+// BenchmarkLouvainResolution benchmarks the Louvain algorithm across
+// multiple resolutions on the duplication-divergence graph.
+func BenchmarkLouvainResolution(b *testing.B) {
+	for _, γ := range []float64{0.5, 1, 2, 5, 10} {
+		b.Run(fmt.Sprintf("dupGraph_γ=%.1f", γ), func(b *testing.B) {
+			src := rand.NewPCG(1, 1)
+			for i := 0; i < b.N; i++ {
+				Modularize(dupGraph, γ, src)
+			}
+		})
+	}
+}
+
+func BenchmarkArXivGraphs(b *testing.B) {
+	// BenchmarkLeidenArxiv benchmarks the Leiden algorithm on ogbn-arxiv subgraphs.
+	b.Run("leiden", func(b *testing.B) {
+		for _, test := range arXivTestGraphs {
+			for _, γ := range []float64{1, 2, 5} {
+				b.Run(fmt.Sprintf("E=%d_γ=%.1f", test.size, γ), func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						src := rand.NewPCG(42, uint64(i))
+						Leiden(test.g, γ, src)
+					}
+				})
+			}
+		}
+	})
+
+	// BenchmarkLouvainArxiv benchmarks the Louvain algorithm on ogbn-arxiv subgraphs.
+	b.Run("louvain", func(b *testing.B) {
+		for _, test := range arXivTestGraphs {
+			for _, γ := range []float64{1, 2, 5} {
+				b.Run(fmt.Sprintf("E=%d_γ=%.1f", test.size, γ), func(b *testing.B) {
+					for i := 0; i < b.N; i++ {
+						src := rand.NewPCG(42, uint64(i))
+						Modularize(test.g, γ, src)
+					}
+				})
+			}
+		}
+	})
+}
+
+type arXivTestGraph struct {
+	name string
+	g    graph.Undirected
+	size int
+}
+
+var arXivTestGraphs []arXivTestGraph
+
+func init() {
+	for _, file := range []struct {
+		name string
+		size int
+	}{
+		0: {name: "arxiv_2500.graph6.gz", size: 2500},
+		1: {name: "arxiv_5000.graph6.gz", size: 5000},
+	} {
+		g, err := loadGraph6(file.name)
+		if err != nil {
+			panic(err)
+		}
+		name, _, ok := strings.Cut(file.name, ".")
+		if !ok {
+			panic(fmt.Sprintf("invalid arxiv graph test file name: %s", file.name))
+		}
+		arXivTestGraphs = append(arXivTestGraphs, arXivTestGraph{
+			name: name,
+			g:    g,
+			size: file.size,
+		})
+	}
+}
+
+// loadGraph6 loads a graph6-encoded graph from embedded testdata.
+// The filename should be relative to testdata (e.g., "arxiv_5000.graph6.gz").
+func loadGraph6(file string) (graph.Undirected, error) {
+	f, err := testdataGraphs.Open(path.Join("testdata", file))
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, err
+	}
+	defer gz.Close()
+	g6, err := io.ReadAll(gz)
+	if err != nil {
+		return nil, err
+	}
+	u := simple.NewUndirectedGraph()
+	copyUndirected(u, graph6.Graph(bytes.TrimSpace(g6)))
+	return u, nil
+}
+
+// copyUndirected is a specialised version of graph.Copy that does not
+// make unnecessary edge set calls undirected graphs.
+func copyUndirected(dst graph.Builder, src graph.Graph) {
+	nodes := src.Nodes()
+	for nodes.Next() {
+		dst.AddNode(nodes.Node())
+	}
+	nodes.Reset()
+	for nodes.Next() {
+		u := nodes.Node()
+		uid := u.ID()
+		to := src.From(uid)
+		for to.Next() {
+			vid := to.Node().ID()
+			if uid < vid {
+				dst.SetEdge(src.Edge(uid, vid))
+			}
+		}
+	}
 }
