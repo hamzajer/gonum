@@ -39,10 +39,10 @@ func ExampleLeiden_connectedCommunities() {
 	}
 
 	const γ = 1.5
-	src := rand.New(rand.NewPCG(4, 19))
-
-	rLouvain := Modularize(g, γ, src)
-	rLeiden := Leiden(g, γ, src)
+	src1 := rand.New(rand.NewPCG(4, 19))
+	src2 :=  rand.New(rand.NewPCG(4, 19))
+	rLouvain := Modularize(g, γ, src1)
+	rLeiden := Leiden(g, γ, src2)
 
 	// Check whether each algorithm produced any disconnected community.
 	louvainOK := allConnected(g, rLouvain.Communities())
@@ -55,7 +55,7 @@ func ExampleLeiden_connectedCommunities() {
 
 	// Output:
 	// Louvain: 11 communities, all connected: false
-	// Leiden:  11 communities, all connected: true
+	// Leiden:  13 communities, all connected: true
 }
 
 // allConnected reports whether every community in comms forms a connected

@@ -88,7 +88,7 @@ func leidenDirectedMultiplex(g DirectedMultiplex, weights, resolutions []float64
 		}
 		c = reduceDirectedMultiplex(c, refined, weights)
 	}
-	return c
+	panic("community: Leiden did not converge within 1000 iterations")
 }
 
 // inducedDirectedMultiplex is an directed multiplex view over a subset of

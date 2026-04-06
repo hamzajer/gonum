@@ -45,7 +45,7 @@ func leidenDirected(g graph.Directed, resolution float64, src rand.Source) *Redu
 		}
 		c = reduceDirected(c, refined)
 	}
-	return c
+	panic("community: Leiden did not converge within 1000 iterations")
 }
 
 // inducedDirected is a directed graph view over a subset of nodes of a

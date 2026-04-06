@@ -74,7 +74,7 @@ func leidenUndirected(g graph.Undirected, resolution float64, src rand.Source) *
 		}
 		c = reduceUndirected(c, refined)
 	}
-	return c
+	panic("community: Leiden did not converge within 1000 iterations")
 }
 
 // inducedUndirected is an undirected graph view over a subset of nodes of a

@@ -52,7 +52,7 @@ func leidenUndirectedMultiplex(g UndirectedMultiplex, weights, resolutions []flo
 		}
 		c = reduceUndirectedMultiplex(c, refined, weights)
 	}
-	return c
+	panic("community: Leiden did not converge within 1000 iterations")
 }
 
 // inducedUndirectedMultiplex is an undirected multiplex view over a subset of
