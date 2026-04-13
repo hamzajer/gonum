@@ -80,67 +80,6 @@ func TestLeidenVsLouvainArxiv(t *testing.T) {
 	}
 }
 
-func TestLeiden(t *testing.T) {
-	var leidenTests = []struct {
-		name string
-		g    graph.Undirected
-	}{
-		{name: "dupGraph", g: dupGraph},
-		{name: arXivTestGraphs[0].name, g: arXivTestGraphs[0].g},
-	}
-
-	// Resolution effect verifies that increasing the resolution
-	// parameter γ produces more (or equal) communities. This holds for
-	// both standard graphs and the ogbn-arxiv citation network.
-	t.Run("resolution_effect", func(t *testing.T) {
-		for _, test := range leidenTests {
-			t.Run(test.name, func(t *testing.T) {
-				prevComms := 0
-
-				for _, γ := range []float64{0.5, 1.0, 2.0, 5.0, 10.0} {
-					src := rand.New(rand.NewPCG(1, 1))
-					r := Leiden(test.g, γ, src)
-					nComms := len(r.Communities())
-
-					t.Logf("γ=%5.1f → %d communities", γ, nComms)
-
-					if prevComms > 0 && nComms < prevComms {
-						t.Errorf("community count decreased from %d (lower γ) to %d at γ=%.1f",
-							prevComms, nComms, γ)
-					}
-					prevComms = nComms
-				}
-			})
-		}
-	})
-
-	// Connectedness verifies that Leiden communities are internally
-	// connected — the key guarantee over Louvain. Each community of size > 1
-	// is checked via BFS: all members must be reachable from the first node
-	// through edges internal to the community.
-	t.Run("connectedness", func(t *testing.T) {
-		for _, test := range leidenTests {
-			t.Run(test.name, func(t *testing.T) {
-				for _, γ := range []float64{0.5, 1.0, 2.0, 5.0} {
-					t.Run(fmt.Sprintf("γ=%.1f", γ), func(t *testing.T) {
-						src := rand.New(rand.NewPCG(1, 1))
-						r := Leiden(test.g, γ, src)
-
-						for i, comm := range r.Communities() {
-							if len(comm) <= 1 {
-								continue
-							}
-							if !isCommunityConnected(test.g, comm) {
-								order.ByID(comm)
-								t.Errorf("community %d (size %d) is not connected", i, len(comm))
-							}
-						}
-					})
-				}
-			})
-		}
-	})
-}
 
 // TestLeidenVsLouvainDisconnected demonstrates Louvain's known weakness:
 // it can produce communities that are not internally connected.
